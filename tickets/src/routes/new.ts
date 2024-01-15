@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import { requireAuth, validateRequest } from '@xyztix/common';
 import { body } from 'express-validator';
 import { Ticket } from '../models/ticket';
+import { TicketCreatedPublisher } from '../events/publishers/ticket-created-publisher';
+import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
@@ -22,7 +24,14 @@ async (req: Request, res: Response) => {
     price,
     userId: req.currentUser!.id
   });
-  await ticket.save();
+  await ticket.save(); // await saving ticket doc to DB. any errors will be thrown and handled by error handling middleware
+  await new TicketCreatedPublisher(natsWrapper.client).publish({ // await publishing event to NATS. any errors will be thrown and handled by error handling middleware
+    id: ticket.id,
+    title: ticket.title,
+    price: ticket.price,
+    userId: ticket.userId,
+  });
+  
   res.status(201).send(ticket);
 });
 

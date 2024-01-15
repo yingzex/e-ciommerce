@@ -1,4 +1,4 @@
-import { channel } from 'diagnostics_channel';
+import { TicketCreatedPublisher } from './events/ticket-created-publisher';
 import nats from 'node-nats-streaming';
 
 console.clear();
@@ -10,19 +10,31 @@ const stan = nats.connect('ticketing', 'abc', {
 }); // client is called `stan` in nats
 
 // when client successfully connects to nats, streaming server will emit a connect event
-stan.on('connect', () => {
+stan.on('connect', async () => {
   console.log('publisher connected to NATS');
 
-  // convert object to json before sending to NATS streaming server
-  const data = JSON.stringify({
-    id: '123',
-    title: 'concert',
-    price: 20
-  });
+  const publisher = new TicketCreatedPublisher(stan);
+  // wait for publish to be completed successfully before running other code
+  try {
+    await publisher.publish({
+      id: '123',
+      title: 'concert',
+      price: 20
+    });
+  } catch(err) {
+    console.log(err);
+  }
 
-  // pass: subject(name of the channel), message(data to be shared) 
-  stan.publish('ticket:created', data, () => {
-    // invoked after publishing the data
-    console.log('event published');
-  })
+  // // convert object to json before sending to NATS streaming server
+  // const data = JSON.stringify({
+  //   id: '123',
+  //   title: 'concert',
+  //   price: 20
+  // });
+
+  // // pass: subject(name of the channel), message(data to be shared) 
+  // stan.publish('ticket:created', data, () => {
+  //   // invoked after publishing the data
+  //   console.log('event published');
+  // });
 })
