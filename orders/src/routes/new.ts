@@ -9,7 +9,7 @@ import { natsWrapper } from '../nats-wrapper';
 
 const router = express.Router();
 
-const EXPIRATION_WINDOW_SECONDS = 15 * 60;
+const EXPIRATION_WINDOW_SECONDS = 1 * 60;
 
 router.post('/api/orders', 
   requireAuth, 
@@ -54,6 +54,7 @@ router.post('/api/orders',
     // publish an event sayting that an order was created
     new OrderCreatedPublisher(natsWrapper.client).publish({
       id: order.id,
+      version: order.version,
       status: order.status,
       userId: order.userId,
       expiresAt: order.expiresAt.toISOString(), // convert Date to string, provide UTC timezone
