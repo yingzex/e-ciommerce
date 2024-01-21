@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payments-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      # how the deployment will find the pods that actually creates
+      app: payments-mongo
+  template:
+    metadata:
+      # labels that applied to the pod
+      labels:
+        app: payments-mongo
+    spec:
+      containers:
+        - name: payments-mongo
+          # refer to mango image in docker hub
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments-mongo-srv
+spec:
+  selector:
+    app: payments-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
