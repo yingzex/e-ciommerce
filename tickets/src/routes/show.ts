@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get('/api/tickets/:id', async(req: Request, res: Response) => {
   const ticket = await Ticket.findById(req.params.id);
+  console.log(req.params.id);
+  console.log(ticket);
   if (!ticket) {
     throw new NotFoundError();
   }

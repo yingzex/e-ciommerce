@@ -27,6 +27,7 @@ async (req: Request, res: Response) => {
   await ticket.save(); // await saving ticket doc to DB. any errors will be thrown and handled by error handling middleware
   await new TicketCreatedPublisher(natsWrapper.client).publish({ // await publishing event to NATS. any errors will be thrown and handled by error handling middleware
     id: ticket.id,
+    version: ticket.version,
     title: ticket.title,
     price: ticket.price,
     userId: ticket.userId,
